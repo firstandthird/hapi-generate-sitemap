@@ -1,0 +1,30 @@
+{
+  "name": "hapi-generate-sitemap",
+  "version": "0.0.1",
+  "description": "Hapi plugin for generating a sitemap",
+  "main": "index.js",
+  "scripts": {
+    "test": "tap test/test.*.js",
+    "lint": "eslint **/*.js"
+  },
+  "keywords": [
+    "hapi",
+    "methods"
+  ],
+  "eslintConfig": {
+    "extends": "firstandthird"
+  },
+  "author": "First+Third",
+  "license": "MIT",
+  "dependencies": {
+    "hapi-auto-handler": "^1.5.1",
+    "hapi-req": "^0.4.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.4.0",
+    "eslint-config-firstandthird": "^3.0.2",
+    "eslint-plugin-import": "^2.2.0",
+    "hapi": "^16.0.2",
+    "tap": "^10.7.2"
+  }
+}
