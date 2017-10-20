@@ -19,7 +19,6 @@
   "license": "MIT",
   "dependencies": {
     "async": "^2.5.0",
-    "hapi-auto-handler": "^1.5.1",
     "joi": "^13.0.1"
   },
   "devDependencies": {
