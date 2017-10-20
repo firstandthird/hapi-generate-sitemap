@@ -348,8 +348,11 @@ tap.test('can also return xml output', (t) => {
         method: 'get',
         url: '/sitemap.xml'
       }, (response) => {
-        t.notEqual(response.result.indexOf('<?xml version="1.0" encoding="UTF-8"?>'), -1, 'returns xml content');
         t.equal(response.statusCode, 200, 'returns HTTP OK');
+        t.equal(response.result.trim(), `<?xml version="1.0" encoding="UTF-8"?>
+              <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+                <url><loc>http://${server.info.host}:${server.info.port}/path1</loc></url>
+              </urlset>`, 'returns xml content');
         done();
       });
     },
