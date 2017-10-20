@@ -1,19 +1,27 @@
 const async = require('async');
-const getRoutes = require('./methods/getRoutes');
-
-exports.register = function(serverObject, pluginOptions, next) {
-  serverObject.method('getRoutes', getRoutes.method.bind(serverObject), {});
-  const pathName = pluginOptions.endpoint || '/sitemap';
-  serverObject.route({
+const getRoutes = require('./lib/getRoutes');
+const Joi = require('joi');
+exports.register = function(server, pluginOptions, next) {
+  // const pathName = pluginOptions.endpoint || '/sitemap';
+  const validation = Joi.validate(pluginOptions, Joi.object({
+    excludeTags: Joi.array().default([]),
+    additionalRoutes: Joi.func().optional(),
+    endpoint: Joi.string().default('/sitemap')
+  }));
+  if (validation.error) {
+    return next(validation.error);
+  }
+  const pathName = validation.value.endpoint;
+  server.route({
     path: `${pathName}.{type}`,
     method: 'get',
-    handler: {
-      autoInject: {
-        pages(server, done) {
-          const routes = server.methods.getRoutes(pluginOptions);
+    handler(request, reply) {
+      async.autoInject({
+        pages(done) {
+          const routes = getRoutes(server, pluginOptions);
           done(null, routes);
         },
-        additionalRoutes(server, done) {
+        additionalRoutes(done) {
           if (typeof pluginOptions.additionalRoutes === 'function') {
             return pluginOptions.additionalRoutes(done);
           }
@@ -24,7 +32,7 @@ exports.register = function(serverObject, pluginOptions, next) {
           all.sort();
           done(null, all);
         },
-        reply(request, all, done) {
+        format(all, done) {
           if (request.params.type === 'html') {
             const html = `
               <ul>
@@ -42,8 +50,13 @@ exports.register = function(serverObject, pluginOptions, next) {
             return done(null, all.map(url => `${request.connection.info.protocol}://${request.info.host}${url}`).join('\n'));
           }
           done(null, all);
+        },
+      }, (err, results) => {
+        if (err) {
+          return reply(err);
         }
-      }
+        reply(null, results.format);
+      });
     }
   });
   next();

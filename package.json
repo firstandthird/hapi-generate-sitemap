@@ -9,6 +9,7 @@
   },
   "keywords": [
     "hapi",
+    "sitemap",
     "methods"
   ],
   "eslintConfig": {
@@ -19,7 +20,7 @@
   "dependencies": {
     "async": "^2.5.0",
     "hapi-auto-handler": "^1.5.1",
-    "hapi-req": "^0.4.0"
+    "joi": "^13.0.1"
   },
   "devDependencies": {
     "eslint": "^3.4.0",

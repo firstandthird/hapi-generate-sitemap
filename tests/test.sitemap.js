@@ -20,16 +20,10 @@ tap.test('generates a sitemap', (t) => {
       });
       done();
     },
-    autoHandler(server, done) {
-      server.register(require('hapi-auto-handler'), {}, done);
-    },
-    req(server, done) {
-      server.register(require('hapi-req'), {}, done);
-    },
     sitemap(server, done) {
       server.register(plugin, {}, done);
     },
-    start(server, autoHandler, req, sitemap, done) {
+    start(server, sitemap, done) {
       server.start(done);
     },
     test(start, server, done) {
@@ -67,12 +61,6 @@ tap.test('can take custom endpoint', (t) => {
       });
       done();
     },
-    autoHandler(server, done) {
-      server.register(require('hapi-auto-handler'), {}, done);
-    },
-    req(server, done) {
-      server.register(require('hapi-req'), {}, done);
-    },
     sitemap(server, done) {
       server.register({
         register: plugin,
@@ -81,7 +69,7 @@ tap.test('can take custom endpoint', (t) => {
         }
       }, done);
     },
-    start(server, autoHandler, req, sitemap, done) {
+    start(server, sitemap, done) {
       server.start(done);
     },
     test(start, server, done) {
@@ -129,12 +117,6 @@ tap.test('ignore routes by routetag', (t) => {
       });
       done();
     },
-    autoHandler(server, done) {
-      server.register(require('hapi-auto-handler'), {}, done);
-    },
-    req(server, done) {
-      server.register(require('hapi-req'), {}, done);
-    },
     sitemap(server, done) {
       server.register({
         register: plugin,
@@ -143,7 +125,7 @@ tap.test('ignore routes by routetag', (t) => {
         }
       }, done);
     },
-    start(server, autoHandler, req, sitemap, done) {
+    start(server, sitemap, done) {
       server.start(done);
     },
     test(start, server, done) {
@@ -194,12 +176,6 @@ tap.test('ignore routes by plugin config on route', (t) => {
       });
       done();
     },
-    autoHandler(server, done) {
-      server.register(require('hapi-auto-handler'), {}, done);
-    },
-    req(server, done) {
-      server.register(require('hapi-req'), {}, done);
-    },
     sitemap(server, done) {
       server.register({
         register: plugin,
@@ -208,7 +184,7 @@ tap.test('ignore routes by plugin config on route', (t) => {
         }
       }, done);
     },
-    start(server, autoHandler, req, sitemap, done) {
+    start(server, sitemap, done) {
       server.start(done);
     },
     test(start, server, done) {
@@ -259,30 +235,17 @@ tap.test('accepts a function containing additional unlisted routes', (t) => {
       });
       done();
     },
-    autoHandler(server, done) {
-      server.register(require('hapi-auto-handler'), {}, done);
-    },
-    req(server, done) {
-      server.register(require('hapi-req'), {}, done);
-    },
     sitemap(server, done) {
       server.register({
         register: plugin,
         options: {
           additionalRoutes: (callback) => callback(null, [
-            {
-              path: 'add1',
-              method: 'get'
-            },
-            {
-              path: 'add2',
-              method: 'post'
-            }
+            '/add1', '/add2'
           ])
         }
       }, done);
     },
-    start(server, autoHandler, req, sitemap, done) {
+    start(server, sitemap, done) {
       server.start(done);
     },
     test(start, server, done) {
@@ -291,8 +254,8 @@ tap.test('accepts a function containing additional unlisted routes', (t) => {
         url: '/sitemap.html'
       }, (response) => {
         t.equal(response.statusCode, 200, 'returns HTTP OK');
-        t.equal(response.result.indexOf(`<a href="http://${server.info.host}:${server.info.port}/add1">http://${server.info.host}:${server.info.port}/add1</a>`), -1, 'addition routes mapped');
-        t.equal(response.result.indexOf(`<a href="http://${server.info.host}:${server.info.port}/add2">http://${server.info.host}:${server.info.port}/add2</a>`), -1, 'addition routes mapped');
+        t.equal(response.result.indexOf(`<a href="http://${server.info.host}:${server.info.port}add1">http://${server.info.host}:${server.info.port}add1</a>`), -1, 'addition routes mapped');
+        t.equal(response.result.indexOf(`<a href="http://${server.info.host}:${server.info.port}add2">http://${server.info.host}:${server.info.port}add2</a>`), -1, 'addition routes mapped');
         done();
       });
     }
@@ -324,16 +287,13 @@ tap.test('can also return txt and xml output', (t) => {
     autoHandler(server, done) {
       server.register(require('hapi-auto-handler'), {}, done);
     },
-    req(server, done) {
-      server.register(require('hapi-req'), {}, done);
-    },
     sitemap(server, done) {
       server.register({
         register: plugin,
         options: {}
       }, done);
     },
-    start(server, autoHandler, req, sitemap, done) {
+    start(server, sitemap, done) {
       server.start(done);
     },
     testXml(start, server, done) {
