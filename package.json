@@ -4,7 +4,7 @@
   "description": "Hapi plugin for generating a sitemap",
   "main": "index.js",
   "scripts": {
-    "test": "tap test/test.*.js",
+    "test": "tap tests/test.*.js",
     "lint": "eslint **/*.js"
   },
   "keywords": [
