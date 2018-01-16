@@ -18,14 +18,13 @@
   "author": "First+Third",
   "license": "MIT",
   "dependencies": {
-    "async": "^2.5.0",
-    "joi": "^13.0.1"
+    "joi": "^13.1.0"
   },
   "devDependencies": {
-    "eslint": "^3.4.0",
-    "eslint-config-firstandthird": "^3.0.2",
-    "eslint-plugin-import": "^2.2.0",
-    "hapi": "^16.0.2",
-    "tap": "^10.7.2"
+    "eslint": "^4.15.0",
+    "eslint-config-firstandthird": "^4.3.0",
+    "eslint-plugin-import": "^2.8.0",
+    "hapi": "^17.2.0",
+    "tap": "^11.0.1"
   }
 }
