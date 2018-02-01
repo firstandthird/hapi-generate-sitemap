@@ -132,7 +132,7 @@ tap.test('accepts dynamic route options', async(t) => {
       return 'hello';
     }
   });
-  
+
   server.route({
     method: 'get',
     path: '/static-route',
