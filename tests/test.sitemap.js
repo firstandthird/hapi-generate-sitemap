@@ -132,6 +132,15 @@ tap.test('accepts dynamic route options', async(t) => {
       return 'hello';
     }
   });
+  
+  server.route({
+    method: 'get',
+    path: '/static-route',
+    handler(request, h) {
+      return 'static hello';
+    }
+  });
+
   await server.register({
     plugin,
     options: {
@@ -152,9 +161,7 @@ tap.test('accepts dynamic route options', async(t) => {
     url: '/sitemap.json'
   });
   t.equal(response.statusCode, 200, 'returns HTTP OK');
-  t.equal(response.result.includes('/path/param2'), true);
-  t.equal(response.result.includes('/path/param1'), true);
-  t.equal(response.result.includes('/path/param3'), true);
+  t.deepEqual(response.result, ['/path/param1', '/path/param2', '/path/param3', '/static-route']);
   await server.stop();
 
   t.end();
