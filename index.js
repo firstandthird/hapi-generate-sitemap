@@ -6,6 +6,7 @@ const register = (server, pluginOptions) => {
   const validation = Joi.validate(pluginOptions, Joi.object({
     excludeTags: Joi.array().default([]),
     additionalRoutes: Joi.func().optional(),
+    dynamicRoutes: Joi.object().optional(),
     endpoint: Joi.string().default('/sitemap')
   }));
   if (validation.error) {
@@ -16,7 +17,7 @@ const register = (server, pluginOptions) => {
     path: `${pathName}.{type}`,
     method: 'get',
     async handler(request, h) {
-      const pages = getRoutes(server, pluginOptions);
+      const pages = await getRoutes(server, pluginOptions);
       const additionalRoutes = typeof pluginOptions.additionalRoutes === 'function' ? await pluginOptions.additionalRoutes() : [];
       const all = [].concat(pages, additionalRoutes);
       all.sort();
