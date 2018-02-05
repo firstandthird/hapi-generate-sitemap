@@ -7,17 +7,29 @@ const register = (server, pluginOptions) => {
     excludeTags: Joi.array().default([]),
     additionalRoutes: Joi.func().optional(),
     dynamicRoutes: Joi.object().optional(),
-    endpoint: Joi.string().default('/sitemap')
+    endpoint: Joi.string().default('/sitemap'),
+    logRequest: Joi.boolean().default(false)
   }));
+
   if (validation.error) {
     throw validation.error;
   }
+
   const pathName = validation.value.endpoint;
   server.route({
     path: `${pathName}.{type}`,
     method: 'get',
     async handler(request, h) {
+      if (validation.value.logRequest) {
+        const logVal = { request: request.path, timestamp: new Date() };
+        if (request.headers['user-agent']) {
+          logVal.userAgent = request.headers['user-agent'];
+        }
+        server.log(['hapi-generate-sitemap', 'requested', 'info'], logVal);
+      }
+
       const pages = await getRoutes(server, pluginOptions);
+
       const additionalRoutes = typeof pluginOptions.additionalRoutes === 'function' ? await pluginOptions.additionalRoutes() : [];
       const all = [].concat(pages, additionalRoutes);
       all.sort();
