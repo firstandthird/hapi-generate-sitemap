@@ -6,7 +6,7 @@ const register = (server, pluginOptions) => {
   const validation = Joi.validate(pluginOptions, Joi.object({
     excludeTags: Joi.array().default([]),
     additionalRoutes: Joi.func().optional(),
-    dynamicRoutes: Joi.object().optional(),
+    dynamicRoutes: Joi.func().optional(),
     endpoint: Joi.string().default('/sitemap'),
     logRequest: Joi.boolean().default(false)
   }));
