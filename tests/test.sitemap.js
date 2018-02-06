@@ -144,14 +144,16 @@ tap.test('accepts dynamic route options', async(t) => {
   await server.register({
     plugin,
     options: {
-      dynamicRoutes: {
-        '/path/{param}': async () => {
-          return [
+      dynamicRoutes: async (path) => {
+        const routes = {
+          '/path/{param}': [
             '/path/param1',
             '/path/param2',
             '/path/param3'
-          ];
-        }
+          ]
+        };
+
+        return (routes[path]) ? routes[path] : [];
       }
     }
   });
