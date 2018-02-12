@@ -144,7 +144,8 @@ tap.test('accepts dynamic route options', async(t) => {
   await server.register({
     plugin,
     options: {
-      dynamicRoutes: async (path) => {
+      dynamicRoutes: (path, request) => {
+        t.equal(request.query.limit, '1', 'passes request object to dynamicRoutes');
         const routes = {
           '/path/{param}': [
             '/path/param1',
@@ -160,7 +161,7 @@ tap.test('accepts dynamic route options', async(t) => {
   await server.start();
   const response = await server.inject({
     method: 'get',
-    url: '/sitemap.json'
+    url: '/sitemap.json?limit=1'
   });
   t.equal(response.statusCode, 200, 'returns HTTP OK');
   t.deepEqual(response.result, ['/path/param1', '/path/param2', '/path/param3', '/static-route']);

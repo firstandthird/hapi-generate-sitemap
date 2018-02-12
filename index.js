@@ -28,7 +28,7 @@ const register = (server, pluginOptions) => {
         server.log(['hapi-generate-sitemap', 'requested', 'info'], logVal);
       }
 
-      const pages = await getRoutes(server, pluginOptions);
+      const pages = await getRoutes(server, pluginOptions, request);
 
       const additionalRoutes = typeof pluginOptions.additionalRoutes === 'function' ? await pluginOptions.additionalRoutes() : [];
       const all = [].concat(pages, additionalRoutes);
