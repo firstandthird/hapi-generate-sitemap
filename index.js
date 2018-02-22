@@ -4,6 +4,7 @@ const Joi = require('joi');
 const register = (server, pluginOptions) => {
   // const pathName = pluginOptions.endpoint || '/sitemap';
   const validation = Joi.validate(pluginOptions, Joi.object({
+    forceHttps: Joi.boolean().default(false),
     excludeTags: Joi.array().default([]),
     additionalRoutes: Joi.func().optional(),
     dynamicRoutes: Joi.func().optional(),
@@ -33,21 +34,22 @@ const register = (server, pluginOptions) => {
       const additionalRoutes = typeof pluginOptions.additionalRoutes === 'function' ? await pluginOptions.additionalRoutes() : [];
       const all = [].concat(pages, additionalRoutes);
       all.sort();
+      const protocol = pluginOptions.forceHttps ? 'https' : request.server.info.protocol;
       if (request.params.type === 'html') {
         const html = `
           <ul>
-            ${all.map((url) => `<li><a href="${request.server.info.protocol}://${request.info.host}${url}">${request.server.info.protocol}://${request.info.host}${url}</a></li>`).join('')}
+            ${all.map((url) => `<li><a href="${protocol}://${request.info.host}${url}">${protocol}://${request.info.host}${url}</a></li>`).join('')}
           </ul>`;
         return html;
       } else if (request.params.type === 'xml') {
         const xml = `;
           <?xml version="1.0" encoding="UTF-8"?>
           <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-            ${all.map((url) => `<url><loc>${request.server.info.protocol}://${request.info.host}${url}</loc></url>`).join('')}
+            ${all.map((url) => `<url><loc>${protocol}://${request.info.host}${url}</loc></url>`).join('')}
           </urlset>`;
         return xml;
       } else if (request.params.type === 'txt') {
-        return all.map(url => `${request.server.info.protocol}://${request.info.host}${url}`).join('\n');
+        return all.map(url => `${protocol}://${request.info.host}${url}`).join('\n');
       }
       return all;
     }
