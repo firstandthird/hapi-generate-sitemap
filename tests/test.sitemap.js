@@ -171,10 +171,7 @@ tap.test('?all=1 query option will over-ride the "ignore" plugin config', async(
     }
   });
   await server.register({
-    plugin,
-    options: {
-      excludeTags: ['redirect']
-    }
+    plugin
   });
   await server.start();
   const response = await server.inject({
