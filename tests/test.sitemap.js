@@ -149,6 +149,42 @@ tap.test('ignore routes by plugin config on route', async(t) => {
   t.end();
 });
 
+tap.test('?all=1 query option will over-ride the "ignore" plugin config', async(t) => {
+  const server = await new Hapi.Server({ port: 8080 });
+  server.route({
+    method: 'get',
+    path: '/path1',
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  server.route({
+    method: 'get',
+    path: '/path2',
+    config: {
+      plugins: {
+        sitemap: false
+      }
+    },
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  await server.register({
+    plugin
+  });
+  await server.start();
+  const response = await server.inject({
+    method: 'get',
+    url: '/sitemap.html?all=1'
+  });
+  t.equal(response.statusCode, 200, 'returns HTTP OK');
+  t.has(response.result, `<a href="http://${server.info.host}:${server.info.port}/path1">http://${server.info.host}:${server.info.port}/path1</a></li>`);
+  t.has(response.result, `<a href="http://${server.info.host}:${server.info.port}/path2">http://${server.info.host}:${server.info.port}/path2</a></li>`);
+  await server.stop();
+  t.end();
+});
+
 tap.test('accepts dynamic route options', async(t) => {
   const server = await new Hapi.Server({ port: 8080 });
   server.route({
