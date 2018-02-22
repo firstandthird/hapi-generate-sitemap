@@ -23,6 +23,32 @@ tap.test('generates a sitemap', async(t) => {
   t.end();
 });
 
+tap.test('forceHttps labels all routes with "https://" (useful if you are behind an HTTPS proxy)', async(t) => {
+  const server = await new Hapi.Server({ port: 8080 });
+  server.route({
+    method: 'get',
+    path: '/path1',
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  await server.register({
+    plugin,
+    options: {
+      forceHttps: true
+    }
+  });
+  await server.start();
+  const response = await server.inject({
+    method: 'get',
+    url: '/sitemap.html'
+  });
+  t.equal(response.statusCode, 200, 'returns HTTP OK');
+  t.notEqual(response.result.indexOf(`<a href="https://${server.info.host}:${server.info.port}/path1">https://${server.info.host}:${server.info.port}/path1</a></li>`), -1);
+  await server.stop();
+  t.end();
+});
+
 tap.test('can take custom endpoint', async(t) => {
   const server = await new Hapi.Server({ port: 8080 });
   server.route({
