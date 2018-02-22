@@ -42,12 +42,11 @@ const register = (server, pluginOptions) => {
           </ul>`;
         return html;
       } else if (request.params.type === 'xml') {
-        const xml = `;
-          <?xml version="1.0" encoding="UTF-8"?>
+        const xml = `<?xml version="1.0" encoding="UTF-8"?>
           <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
             ${all.map((url) => `<url><loc>${protocol}://${request.info.host}${url}</loc></url>`).join('')}
           </urlset>`;
-        return xml;
+        return h.response(xml).type('text/xml');
       } else if (request.params.type === 'txt') {
         const txt = all.map(url => `${protocol}://${request.info.host}${url}`).join('\n');
         return h.response(txt).type('text/plain');
