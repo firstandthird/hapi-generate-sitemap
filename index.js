@@ -49,7 +49,8 @@ const register = (server, pluginOptions) => {
           </urlset>`;
         return xml;
       } else if (request.params.type === 'txt') {
-        return all.map(url => `${protocol}://${request.info.host}${url}`).join('\n');
+        const txt = all.map(url => `${protocol}://${request.info.host}${url}`).join('\n');
+        return h.response(txt).type('text/plain');
       }
       return all;
     }
