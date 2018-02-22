@@ -255,6 +255,7 @@ tap.test('can also return txt output', async(t) => {
     url: '/sitemap.txt'
   });
   t.equal(response.statusCode, 200, 'returns HTTP OK');
+  t.has(response.headers['content-type'], 'text/plain;');
   t.equal(response.result, `http://${server.info.host}:${server.info.port}/path1`, 'returns txt map');
   await server.stop();
   t.end();
