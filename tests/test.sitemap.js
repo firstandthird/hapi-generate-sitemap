@@ -49,6 +49,69 @@ tap.test('forceHttps labels all routes with "https://" (useful if you are behind
   t.end();
 });
 
+tap.test('html can be divided into sections', async(t) => {
+  const server = await new Hapi.Server({ port: 8080 });
+  server.route({
+    method: 'get',
+    path: '/path1',
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  server.route({
+    method: 'get',
+    path: '/story1',
+    config: {
+      plugins: {
+        'hapi-generate-sitemap': {
+          section: 'Stories'
+        }
+      }
+    },
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  server.route({
+    method: 'get',
+    path: '/story2',
+    config: {
+      plugins: {
+        'hapi-generate-sitemap': {
+          section: 'Stories'
+        }
+      }
+    },
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  server.route({
+    method: 'get',
+    path: '/interview1',
+    config: {
+      plugins: {
+        'hapi-generate-sitemap': {
+          section: 'Interviews'
+        }
+      }
+    },
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+
+  await server.register(plugin, {});
+  await server.start();
+  const response = await server.inject({
+    method: 'get',
+    url: '/sitemap.html'
+  });
+  t.has(response.result, `<h2>Interviews</h2><ul><li><a href="http://${server.info.host}:${server.info.port}/interview1">http://${server.info.host}:${server.info.port}/interview1</a></li></ul> <h2>Stories</h2><ul><li><a href="http://${server.info.host}:${server.info.port}/story1">http://${server.info.host}:${server.info.port}/story1</a></li><li><a href="http://${server.info.host}:${server.info.port}/story2">http://${server.info.host}:${server.info.port}/story2</a></li></ul>`);
+  await server.stop();
+  t.end();
+});
+
 tap.test('can take custom endpoint', async(t) => {
   const server = await new Hapi.Server({ port: 8080 });
   server.route({
