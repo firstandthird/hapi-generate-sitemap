@@ -1,6 +1,10 @@
 const getRoutes = require('./lib/getRoutes');
 const Joi = require('joi');
-const groupBy = require('lodash.groupby');
+const html = require('./lib/html');
+const xml = require('./lib/xml');
+const txt = require('./lib/txt');
+
+const handlers = { html, xml, txt };
 
 const register = (server, pluginOptions) => {
   // const pathName = pluginOptions.endpoint || '/sitemap';
@@ -44,34 +48,9 @@ const register = (server, pluginOptions) => {
       // sort by path:
       pages.sort((a, b) => a.path > b.path);
       const protocol = pluginOptions.forceHttps ? 'https' : request.server.info.protocol;
-      if (request.params.type === 'html') {
-        // group the list by sections:
-        const sections = groupBy(pages, (page) => page.section);
-        // first list all the routes that have no section:
-        let html = `
-          <ul>
-            ${sections.none.map((page) => `<li><a href="${protocol}://${request.info.host}${page.path}">${protocol}://${request.info.host}${page.path}</a></li>`).join('')}
-          </ul>`;
-        Object.keys(sections).forEach(sectionName => {
-          if (sectionName === 'none') {
-            return;
-          }
-          html = `${html} <h2>${sectionName}</h2><ul>`;
-          sections[sectionName].forEach(page => {
-            html = `${html}<li><a href="${protocol}://${request.info.host}${page.path}">${protocol}://${request.info.host}${page.path}</a></li>`;
-          });
-          html = `${html}</ul>`;
-        });
-        return html;
-      } else if (request.params.type === 'xml') {
-        const xml = `<?xml version="1.0" encoding="UTF-8"?>
-          <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-            ${pages.map((url) => `<url><loc>${protocol}://${request.info.host}${url.path}</loc></url>`).join('')}
-          </urlset>`;
-        return h.response(xml).type('text/xml');
-      } else if (request.params.type === 'txt') {
-        const txt = pages.map(url => `${protocol}://${request.info.host}${url.path}`).join('\n');
-        return h.response(txt).type('text/plain');
+      console.log(handlers)
+      if (handlers[request.params.type]) {
+        return handlers[request.params.type](protocol, request.info.host, pages, h);
       }
       return pages.map(page => page.path);
     }
