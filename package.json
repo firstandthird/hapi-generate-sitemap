@@ -18,7 +18,8 @@
   "author": "First+Third",
   "license": "MIT",
   "dependencies": {
-    "joi": "^13.1.0"
+    "joi": "^13.1.0",
+    "lodash.groupby": "^4.6.0"
   },
   "devDependencies": {
     "eslint": "^4.15.0",
