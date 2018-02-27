@@ -17,21 +17,20 @@ const register = (server, pluginOptions) => {
   if (validation.error) {
     throw validation.error;
   }
-
+  pluginOptions = validation.value;
   const pathName = validation.value.endpoint;
   server.route({
     path: `${pathName}.{type}`,
     method: 'get',
     async handler(request, h) {
-      if (validation.value.logRequest) {
+      if (pluginOptions.logRequest) {
         const logVal = { request: request.path, timestamp: new Date() };
         if (request.headers['user-agent']) {
           logVal.userAgent = request.headers['user-agent'];
         }
         server.log(['hapi-generate-sitemap', 'requested', 'info'], logVal);
       }
-
-      let pages = await getRoutes(server, pluginOptions, request);
+      const pages = await getRoutes(server, pluginOptions, request);
       const additionalRoutes = typeof pluginOptions.additionalRoutes === 'function' ? await pluginOptions.additionalRoutes() : [];
       // add any additional pages:
       additionalRoutes.forEach(route => {
@@ -45,9 +44,6 @@ const register = (server, pluginOptions) => {
       // sort by path:
       pages.sort((a, b) => a.path > b.path);
       const protocol = pluginOptions.forceHttps ? 'https' : request.server.info.protocol;
-      if (pluginOptions.excludeUrls) {
-        pages = pages.filter(url => !pluginOptions.excludeUrls.includes(url.path));
-      }
       if (request.params.type === 'html') {
         // group the list by sections:
         const sections = groupBy(pages, (page) => page.section);
