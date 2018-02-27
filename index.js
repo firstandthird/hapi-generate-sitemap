@@ -3,6 +3,7 @@ const Joi = require('joi');
 const html = require('./lib/html');
 const xml = require('./lib/xml');
 const txt = require('./lib/txt');
+const boom = require('boom');
 
 const handlers = { html, xml, txt };
 
@@ -48,7 +49,9 @@ const register = (server, pluginOptions) => {
       // sort by path:
       pages.sort((a, b) => a.path > b.path);
       const protocol = pluginOptions.forceHttps ? 'https' : request.server.info.protocol;
-      console.log(handlers)
+      if (request.params.type && request.params.type !== 'json' && !handlers[request.params.type]) {
+        throw boom.notFound(`No handler found for file type ${request.params.type}`);
+      }
       if (handlers[request.params.type]) {
         return handlers[request.params.type](protocol, request.info.host, pages, h);
       }
