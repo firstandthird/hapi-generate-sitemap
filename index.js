@@ -2,6 +2,8 @@ const getRoutes = require('./lib/getRoutes');
 const Joi = require('joi');
 const groupBy = require('lodash.groupby');
 
+const sorter = (a, b) => a.path > b.path;
+
 const register = (server, pluginOptions) => {
   // const pathName = pluginOptions.endpoint || '/sitemap';
   const validation = Joi.validate(pluginOptions, Joi.object({
@@ -41,18 +43,20 @@ const register = (server, pluginOptions) => {
           pages.push(route);
         }
       });
-      // sort by path:
-      pages.sort((a, b) => a.path > b.path);
+      // sort everything by path:
+      pages.sort(sorter);
       const protocol = pluginOptions.forceHttps ? 'https' : request.server.info.protocol;
       if (request.params.type === 'html') {
         // group the list by sections:
         const sections = groupBy(pages, (page) => page.section);
+        // sort each section:
+        Object.values(sections).forEach(section => section.sort(sorter));
         // first list all the routes that have no section:
         let html = `
           <ul>
             ${sections.none.map((page) => `<li><a href="${protocol}://${request.info.host}${page.path}">${protocol}://${request.info.host}${page.path}</a></li>`).join('')}
           </ul>`;
-        Object.keys(sections).forEach(sectionName => {
+        Object.keys(sections).sort().forEach(sectionName => {
           if (sectionName === 'none') {
             return;
           }
