@@ -112,6 +112,140 @@ tap.test('html can be divided into sections', async(t) => {
   t.end();
 });
 
+
+tap.test('each section in html is sorted', async(t) => {
+  const server = await new Hapi.Server({ port: 8080 });
+
+  server.route({
+    method: 'get',
+    path: '/storyB',
+    config: {
+      plugins: {
+        'hapi-generate-sitemap': {
+          section: 'Stories'
+        }
+      }
+    },
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  server.route({
+    method: 'get',
+    path: '/interviewB',
+    config: {
+      plugins: {
+        'hapi-generate-sitemap': {
+          section: 'Interviews'
+        }
+      }
+    },
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  server.route({
+    method: 'get',
+    path: '/sectionA',
+    config: {
+      plugins: {
+        'hapi-generate-sitemap': {
+          section: 'ASection'
+        }
+      }
+    },
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  server.route({
+    method: 'get',
+    path: '/sectionB',
+    config: {
+      plugins: {
+        'hapi-generate-sitemap': {
+          section: 'BSection'
+        }
+      }
+    },
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  server.route({
+    method: 'get',
+    path: '/interviewA',
+    config: {
+      plugins: {
+        'hapi-generate-sitemap': {
+          section: 'Interviews'
+        }
+      }
+    },
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  server.route({
+    method: 'get',
+    path: '/storyC',
+    config: {
+      plugins: {
+        'hapi-generate-sitemap': {
+          section: 'Stories'
+        }
+      }
+    },
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  server.route({
+    method: 'get',
+    path: '/storyA',
+    config: {
+      plugins: {
+        'hapi-generate-sitemap': {
+          section: 'Stories'
+        }
+      }
+    },
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+
+  server.route({
+    method: 'get',
+    path: '/noneB',
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  server.route({
+    method: 'get',
+    path: '/noneA',
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+
+  await server.register(plugin, {});
+  await server.start();
+  const response = await server.inject({
+    method: 'get',
+    url: '/sitemap.html'
+  });
+  const result = response.result;
+  // make sure sections are sorted correctly:
+  t.equal(result.indexOf('ASection') < result.indexOf('BSection') < result.indexOf('Interviews') < result.indexOf('Stories'), true, 'sections sorted correctly');
+  t.equal(result.indexOf('noneA') < result.indexOf('noneB'), true, '"none" section is sorted');
+  t.equal(result.indexOf('storyA') < result.indexOf('storyB') < result.indexOf('storyC'), true, '"Stories" section is sorted');
+  t.equal(result.indexOf('interviewA') < result.indexOf('interviewB'), true, '"Interviews" section is sorted');
+  await server.stop();
+  t.end();
+});
+
 tap.test('can take custom endpoint', async(t) => {
   const server = await new Hapi.Server({ port: 8080 });
   server.route({
