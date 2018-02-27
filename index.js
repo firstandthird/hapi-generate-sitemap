@@ -9,6 +9,7 @@ const register = (server, pluginOptions) => {
   const validation = Joi.validate(pluginOptions, Joi.object({
     forceHttps: Joi.boolean().default(false),
     excludeTags: Joi.array().default([]),
+    excludeUrls: Joi.array().default([]),
     additionalRoutes: Joi.func().optional(),
     dynamicRoutes: Joi.func().optional(),
     endpoint: Joi.string().default('/sitemap'),
@@ -18,20 +19,19 @@ const register = (server, pluginOptions) => {
   if (validation.error) {
     throw validation.error;
   }
-
+  pluginOptions = validation.value;
   const pathName = validation.value.endpoint;
   server.route({
     path: `${pathName}.{type}`,
     method: 'get',
     async handler(request, h) {
-      if (validation.value.logRequest) {
+      if (pluginOptions.logRequest) {
         const logVal = { request: request.path, timestamp: new Date() };
         if (request.headers['user-agent']) {
           logVal.userAgent = request.headers['user-agent'];
         }
         server.log(['hapi-generate-sitemap', 'requested', 'info'], logVal);
       }
-
       const pages = await getRoutes(server, pluginOptions, request);
       const additionalRoutes = typeof pluginOptions.additionalRoutes === 'function' ? await pluginOptions.additionalRoutes() : [];
       // add any additional pages:
