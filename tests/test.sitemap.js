@@ -212,6 +212,39 @@ tap.test('ignore routes by plugin config on route', async(t) => {
   t.end();
 });
 
+tap.test('ignore urls by excludeUrls', async(t) => {
+  const server = await new Hapi.Server({ port: 8080 });
+  server.route({
+    method: 'get',
+    path: '/path1',
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  server.route({
+    method: 'get',
+    path: '/redirect',
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  await server.register({
+    plugin,
+    options: {
+      excludeUrls: ['/path1']
+    }
+  });
+  await server.start();
+  const response = await server.inject({
+    method: 'get',
+    url: '/sitemap.html'
+  });
+  t.equal(response.statusCode, 200, 'returns HTTP OK');
+  t.equal(response.result.indexOf('path1'), -1);
+  await server.stop();
+  t.end();
+});
+
 tap.test('?all=1 query option will over-ride the "ignore" plugin config', async(t) => {
   const server = await new Hapi.Server({ port: 8080 });
   server.route({

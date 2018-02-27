@@ -7,6 +7,7 @@ const register = (server, pluginOptions) => {
   const validation = Joi.validate(pluginOptions, Joi.object({
     forceHttps: Joi.boolean().default(false),
     excludeTags: Joi.array().default([]),
+    excludeUrls: Joi.array().default([]),
     additionalRoutes: Joi.func().optional(),
     dynamicRoutes: Joi.func().optional(),
     endpoint: Joi.string().default('/sitemap'),
@@ -30,7 +31,7 @@ const register = (server, pluginOptions) => {
         server.log(['hapi-generate-sitemap', 'requested', 'info'], logVal);
       }
 
-      const pages = await getRoutes(server, pluginOptions, request);
+      let pages = await getRoutes(server, pluginOptions, request);
       const additionalRoutes = typeof pluginOptions.additionalRoutes === 'function' ? await pluginOptions.additionalRoutes() : [];
       // add any additional pages:
       additionalRoutes.forEach(route => {
@@ -44,6 +45,9 @@ const register = (server, pluginOptions) => {
       // sort by path:
       pages.sort((a, b) => a.path > b.path);
       const protocol = pluginOptions.forceHttps ? 'https' : request.server.info.protocol;
+      if (pluginOptions.excludeUrls) {
+        pages = pages.filter(url => !pluginOptions.excludeUrls.includes(url.path));
+      }
       if (request.params.type === 'html') {
         // group the list by sections:
         const sections = groupBy(pages, (page) => page.section);
