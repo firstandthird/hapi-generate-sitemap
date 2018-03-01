@@ -70,7 +70,13 @@ const register = (server, pluginOptions) => {
       } else if (request.params.type === 'xml') {
         const xml = `<?xml version="1.0" encoding="UTF-8"?>
           <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-            ${pages.map((url) => `<url><loc>${protocol}://${request.info.host}${url.path}</loc></url>`).join('')}
+            ${pages.map((url) => {
+              const loc = `<loc>${protocol}://${request.info.host}${url.path}</loc>`;
+              const lastmod = url.lastmod ? `<lastmod>${url.lastmod}</lastmod>` : '';
+              const changefreq = url.changefreq ? `<changefreq>${url.changefreq}</changefreq>` : '';
+              const priority = url.priority ? `<priority>${url.priority}</priority>` : '';
+              return `<url>${loc}${lastmod}${changefreq}${priority}</url>`;
+            }).join('')}
           </urlset>`;
         return h.response(xml).type('text/xml');
       } else if (request.params.type === 'txt') {

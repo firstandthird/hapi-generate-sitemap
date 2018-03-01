@@ -112,7 +112,6 @@ tap.test('html can be divided into sections', async(t) => {
   t.end();
 });
 
-
 tap.test('each section in html is sorted', async(t) => {
   const server = await new Hapi.Server({ port: 8080 });
 
@@ -547,6 +546,77 @@ tap.test('can also return xml output', async(t) => {
   });
   t.equal(response.statusCode, 200, 'returns HTTP OK');
   t.notEqual(response.result.indexOf('<?xml version="1.0" encoding="UTF-8"?>'), -1);
+  await server.stop();
+  t.end();
+});
+
+tap.test('lastmod, changefreq and priority sitemap tags can be set by route config', async(t) => {
+  const server = await new Hapi.Server({ port: 8080 });
+  await server.register(plugin, {});
+  server.route({
+    method: 'get',
+    path: '/path1',
+    config: {
+      plugins: {
+        'hapi-generate-sitemap': {
+          lastmod: '2005-01-01',
+          changefreq: 'monthly',
+          priority: 0.8,
+        }
+      }
+    },
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  await server.start();
+  const response = await server.inject({
+    method: 'get',
+    url: '/sitemap.xml'
+  });
+  t.equal(response.statusCode, 200, 'returns HTTP OK');
+  t.match(response.result, `<url><loc>http://${server.info.host}:${server.info.port}/path1</loc><lastmod>2005-01-01</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>`);
+  await server.stop();
+  t.end();
+});
+
+tap.test('lastmod, changefreq and priority sitemap tags can be set by dynamicRoutes', async(t) => {
+  const server = await new Hapi.Server({ port: 8080 });
+  await server.register({
+    plugin,
+    options: {
+      dynamicRoutes: (path, request) => {
+        const routes = {
+          '/path/{param}': [
+            {
+              path: '/path/param1',
+              lastmod: '2005-01-01',
+              changefreq: 'monthly',
+              priority: 0.8,
+            },
+            '/path/param2',
+            '/path/param3'
+          ]
+        };
+        return (routes[path]) ? routes[path] : [];
+      }
+    }
+  });
+  server.route({
+    method: 'get',
+    path: '/path/{param}',
+    handler(request, h) {
+      return 'hello';
+    }
+  });
+  await server.start();
+  const response = await server.inject({
+    method: 'get',
+    url: '/sitemap.xml'
+  });
+  t.equal(response.statusCode, 200, 'returns HTTP OK');
+  t.match(response.result, `<url><loc>http://${server.info.host}:${server.info.port}/path/param1</loc><lastmod>2005-01-01</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>`, 'formats sitemap tags correctly');
+  t.match(response.result, `<loc>http://${server.info.host}:${server.info.port}/path/param2</loc></url>`, 'still formats correctly if no sitemap tags specified');
   await server.stop();
   t.end();
 });
