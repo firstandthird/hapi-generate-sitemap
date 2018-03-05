@@ -88,6 +88,10 @@ const register = (server, pluginOptions) => {
         const txt = pages.map(url => `${protocol}://${request.info.host}${url.path}`).join('\n');
         return h.response(txt).type('text/plain');
       }
+      // assume .json:
+      if (request.query.meta) {
+        return pages;
+      }
       return pages.map(page => page.path);
     }
   });
