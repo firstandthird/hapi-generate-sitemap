@@ -99,7 +99,7 @@ tap.test('html can be divided into sections', async(t) => {
     path: '/story1',
     config: {
       plugins: {
-        'hapi-generate-sitemap': {
+        sitemap: {
           section: 'Stories'
         }
       }
@@ -113,7 +113,7 @@ tap.test('html can be divided into sections', async(t) => {
     path: '/story2',
     config: {
       plugins: {
-        'hapi-generate-sitemap': {
+        sitemap: {
           section: 'Stories'
         }
       }
@@ -127,7 +127,7 @@ tap.test('html can be divided into sections', async(t) => {
     path: '/interview1',
     config: {
       plugins: {
-        'hapi-generate-sitemap': {
+        sitemap: {
           section: 'Interviews'
         }
       }
@@ -156,7 +156,7 @@ tap.test('each section in html is sorted', async(t) => {
     path: '/storyB',
     config: {
       plugins: {
-        'hapi-generate-sitemap': {
+        sitemap: {
           section: 'Stories'
         }
       }
@@ -170,7 +170,7 @@ tap.test('each section in html is sorted', async(t) => {
     path: '/interviewB',
     config: {
       plugins: {
-        'hapi-generate-sitemap': {
+        sitemap: {
           section: 'Interviews'
         }
       }
@@ -184,7 +184,7 @@ tap.test('each section in html is sorted', async(t) => {
     path: '/sectionA',
     config: {
       plugins: {
-        'hapi-generate-sitemap': {
+        sitemap: {
           section: 'ASection'
         }
       }
@@ -198,7 +198,7 @@ tap.test('each section in html is sorted', async(t) => {
     path: '/sectionB',
     config: {
       plugins: {
-        'hapi-generate-sitemap': {
+        sitemap: {
           section: 'BSection'
         }
       }
@@ -212,7 +212,7 @@ tap.test('each section in html is sorted', async(t) => {
     path: '/interviewA',
     config: {
       plugins: {
-        'hapi-generate-sitemap': {
+        sitemap: {
           section: 'Interviews'
         }
       }
@@ -226,7 +226,7 @@ tap.test('each section in html is sorted', async(t) => {
     path: '/storyC',
     config: {
       plugins: {
-        'hapi-generate-sitemap': {
+        sitemap: {
           section: 'Stories'
         }
       }
@@ -240,7 +240,7 @@ tap.test('each section in html is sorted', async(t) => {
     path: '/storyA',
     config: {
       plugins: {
-        'hapi-generate-sitemap': {
+        sitemap: {
           section: 'Stories'
         }
       }
@@ -594,7 +594,7 @@ tap.test('lastmod, changefreq and priority sitemap tags can be set by route conf
     path: '/path1',
     config: {
       plugins: {
-        'hapi-generate-sitemap': {
+        sitemap: {
           lastmod: '2005-01-01',
           changefreq: 'monthly',
           priority: 0.8,
