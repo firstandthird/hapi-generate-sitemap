@@ -90,11 +90,7 @@ const register = (server, pluginOptions) => {
       }
       // assume .json:
       if (request.query.meta) {
-        return pages.map(page =>
-          Object.keys(page).reduce((memo, key) => {
-            memo[key] = page[key];
-            return memo;
-          }, {}));
+        return pages;
       }
       return pages.map(page => page.path);
     }
