@@ -25,7 +25,9 @@
     "eslint": "^4.15.0",
     "eslint-config-firstandthird": "^4.3.0",
     "eslint-plugin-import": "^2.8.0",
+    "handlebars": "^4.0.11",
     "hapi": "^17.2.0",
-    "tap": "^11.0.1"
+    "tap": "^11.0.1",
+    "vision": "^5.3.1"
   }
 }

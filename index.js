@@ -7,13 +7,14 @@ const sorter = (a, b) => a.path > b.path;
 const register = (server, pluginOptions) => {
   // const pathName = pluginOptions.endpoint || '/sitemap';
   const validation = Joi.validate(pluginOptions, Joi.object({
-    forceHttps: Joi.boolean().default(false),
-    excludeTags: Joi.array().default([]),
-    excludeUrls: Joi.array().default([]),
-    additionalRoutes: Joi.func().optional(),
-    dynamicRoutes: Joi.func().optional(),
-    endpoint: Joi.string().default('/sitemap'),
-    logRequest: Joi.boolean().default(false)
+    htmlView: Joi.string().default(''), // specify an html template to use for rendering the sitemap, otherwise it is done programmatically
+    forceHttps: Joi.boolean().default(false), // force routes to be listed as https instead of http (useful if you are behind a proxy)
+    excludeTags: Joi.array().default([]), // routes marked with these tags are excluded from the sitemap
+    excludeUrls: Joi.array().default([]), // these urls are excluded from the sitemap
+    additionalRoutes: Joi.func().optional(), // returns any additional routes you want listed on your sitemap
+    dynamicRoutes: Joi.func().optional(), //  returns what routes to list for routes that use dynamic params (eg '/user/{userName}' --> ['/user/roberto', '/user/maria'])
+    endpoint: Joi.string().default('/sitemap'), // name of the path where you can GET a copy of the sitemap
+    logRequest: Joi.boolean().default(false) // specify whether to log each request for the sitemap
   }));
 
   if (validation.error) {
@@ -47,6 +48,10 @@ const register = (server, pluginOptions) => {
       pages.sort(sorter);
       const protocol = pluginOptions.forceHttps ? 'https' : request.server.info.protocol;
       if (request.params.type === 'html') {
+        // if we're using a view just render and return that:;
+        if (pluginOptions.htmlView !== '') {
+          return h.view(pluginOptions.htmlView, { sitemap: pages, host: request.info.host, protocol });
+        }
         // group the list by sections:
         const sections = groupBy(pages, (page) => page.section);
         // sort each section:
