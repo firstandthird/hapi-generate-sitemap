@@ -497,6 +497,41 @@ tap.test('accepts dynamic route options', async(t) => {
   t.end();
 });
 
+tap.test('falls back to route config if not able to set from dynamic route method', async(t) => {
+  const server = await new Hapi.Server({ port: 8080 });
+  server.route({
+    method: 'get',
+    path: '/path/{param}',
+    handler(request, h) {
+      return 'hello';
+    }
+  });
+
+  server.route({
+    method: 'get',
+    path: '/static-route',
+    handler(request, h) {
+      return 'static hello';
+    }
+  });
+
+  await server.register({
+    plugin,
+    options: {
+      dynamicRoutes: (path, request) => undefined
+    }
+  });
+  await server.start();
+  const response = await server.inject({
+    method: 'get',
+    url: '/sitemap.json'
+  });
+  t.equal(response.statusCode, 200, 'returns HTTP OK');
+  t.deepEqual(response.result, ['/path/{param}', '/static-route']);
+  await server.stop();
+  t.end();
+});
+
 tap.test('accepts a function containing additional unlisted routes', async(t) => {
   const server = await new Hapi.Server({ port: 8080 });
   server.route({
