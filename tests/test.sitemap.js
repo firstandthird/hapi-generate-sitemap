@@ -497,37 +497,48 @@ tap.test('accepts dynamic route options', async(t) => {
   t.end();
 });
 
-tap.test('falls back to route config if not able to set from dynamic route method', async(t) => {
+tap.test('if dynamic route does not specify a section then fall back to route config', async(t) => {
   const server = await new Hapi.Server({ port: 8080 });
   server.route({
     method: 'get',
     path: '/path/{param}',
+    config: {
+      plugins: {
+        sitemap: {
+          section: 'Interview'
+        }
+      }
+    },
     handler(request, h) {
       return 'hello';
-    }
-  });
-
-  server.route({
-    method: 'get',
-    path: '/static-route',
-    handler(request, h) {
-      return 'static hello';
     }
   });
 
   await server.register({
     plugin,
     options: {
-      dynamicRoutes: (path, request) => undefined
+      dynamicRoutes: (path, request) => {
+        const routes = {
+          '/path/{param}': [
+            '/path/param1',
+            '/path/param2',
+            '/path/param3'
+          ]
+        };
+        return (routes[path]) ? routes[path] : [];
+      }
     }
   });
   await server.start();
   const response = await server.inject({
     method: 'get',
-    url: '/sitemap.json'
+    url: '/sitemap.json?meta=1'
   });
   t.equal(response.statusCode, 200, 'returns HTTP OK');
-  t.deepEqual(response.result, ['/path/{param}', '/static-route']);
+  t.equal(response.result.length, 3);
+  response.result.forEach(entry => {
+    t.match(entry, { section: 'Interview' });
+  });
   await server.stop();
   t.end();
 });
