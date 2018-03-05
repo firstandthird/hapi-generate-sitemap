@@ -23,6 +23,42 @@ tap.test('generates a sitemap', async(t) => {
   t.end();
 });
 
+tap.test('generates a sitemap when htmlView is set', async(t) => {
+  const server = await new Hapi.Server({ port: 8080 });
+  server.route({
+    method: 'get',
+    path: '/path1',
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  await server.register([
+    {
+      plugin,
+      options: {
+        htmlView: 'sitemap' // this will use the template at test/views/sitemap.html
+      }
+    },
+    {
+      plugin: require('vision'),
+    }
+  ]);
+  server.views({
+    engines: { html: require('handlebars') },
+    relativeTo: __dirname,
+    path: 'views'
+  });
+  await server.start();
+  const response = await server.inject({
+    method: 'get',
+    url: '/sitemap.html'
+  });
+  t.equal(response.statusCode, 200, 'returns HTTP OK');
+  t.match(response.result, `<b>none</b>:<a href="http://${server.info.host}:${server.info.port}/path1">http://${server.info.host}:${server.info.port}/path1</a>`);
+  await server.stop();
+  t.end();
+});
+
 tap.test('forceHttps labels all routes with "https://" (useful if you are behind an HTTPS proxy)', async(t) => {
   const server = await new Hapi.Server({ port: 8080 });
   server.route({
