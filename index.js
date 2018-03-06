@@ -26,6 +26,7 @@ const register = (server, pluginOptions) => {
     path: `${pathName}.{type}`,
     method: 'get',
     async handler(request, h) {
+      const protocol = pluginOptions.forceHttps ? 'https' : request.server.info.protocol;
       if (pluginOptions.logRequest) {
         const logVal = { request: request.path, timestamp: new Date() };
         if (request.headers['user-agent']) {
@@ -38,9 +39,10 @@ const register = (server, pluginOptions) => {
       // add any additional pages:
       additionalRoutes.forEach(route => {
         if (typeof route === 'string') {
-          pages.push({ path: route, title: route, section: 'none', url: `${pluginOptions.forceHttps ? 'https' : request.server.info.protocol}://${request.info.host}${route}` });
+          pages.push({ path: route, title: route, section: 'none', url: `${protocol}://${request.info.host}${route}` });
         } else {
           // otherwise assume it is an object with a path and section heading:
+          route.url = `${protocol}://${request.info.host}${route}`;
           pages.push(route);
         }
       });
