@@ -26,6 +26,7 @@ const register = (server, pluginOptions) => {
     path: `${pathName}.{type}`,
     method: 'get',
     async handler(request, h) {
+      const protocol = pluginOptions.forceHttps ? 'https' : request.server.info.protocol;
       if (pluginOptions.logRequest) {
         const logVal = { request: request.path, timestamp: new Date() };
         if (request.headers['user-agent']) {
@@ -38,26 +39,26 @@ const register = (server, pluginOptions) => {
       // add any additional pages:
       additionalRoutes.forEach(route => {
         if (typeof route === 'string') {
-          pages.push({ path: route, title: route, section: 'none' });
+          pages.push({ path: route, title: route, section: 'none', url: `${protocol}://${request.info.host}${route}` });
         } else {
           // otherwise assume it is an object with a path and section heading:
+          route.url = `${protocol}://${request.info.host}${route}`;
           pages.push(route);
         }
       });
       // sort everything by path:
       pages = sortBy(pages, ['section', 'path']);
-      const protocol = pluginOptions.forceHttps ? 'https' : request.server.info.protocol;
       if (request.params.type === 'html') {
         // if we're using a view just render and return that:;
         if (pluginOptions.htmlView !== '') {
-          return h.view(pluginOptions.htmlView, { sitemap: pages, host: request.info.host, protocol });
+          return h.view(pluginOptions.htmlView, { sitemap: pages });
         }
         // group the list by sections:
         const sections = groupBy(pages, (page) => page.section);
         // first list all the routes that have no section:
         let html = `
           <ul>
-            ${sections.none.map((page) => `<li><a href="${protocol}://${request.info.host}${page.path}">${page.title || `${protocol}://${request.info.host}${page.path}`}</a></li>`).join('')}
+            ${sections.none.map((page) => `<li><a href="${page.url}">${page.title || page.url}</a></li>`).join('')}
           </ul>`;
         Object.keys(sections).sort().forEach(sectionName => {
           if (sectionName === 'none') {
@@ -65,7 +66,7 @@ const register = (server, pluginOptions) => {
           }
           html = `${html} <h2>${sectionName}</h2><ul>`;
           sections[sectionName].forEach(page => {
-            html = `${html}<li><a href="${protocol}://${request.info.host}${page.path}">${page.title || `${protocol}://${request.info.host}${page.path}`}</a></li>`;
+            html = `${html}<li><a href="${page.url}">${page.title || page.url}</a></li>`;
           });
           html = `${html}</ul>`;
         });
@@ -73,17 +74,17 @@ const register = (server, pluginOptions) => {
       } else if (request.params.type === 'xml') {
         const xml = `<?xml version="1.0" encoding="UTF-8"?>
           <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-            ${pages.map((url) => {
-              const loc = `<loc>${protocol}://${request.info.host}${url.path}</loc>`;
-              const lastmod = url.lastmod ? `<lastmod>${url.lastmod}</lastmod>` : '';
-              const changefreq = url.changefreq ? `<changefreq>${url.changefreq}</changefreq>` : '';
-              const priority = url.priority ? `<priority>${url.priority}</priority>` : '';
+            ${pages.map((page) => {
+              const loc = `<loc>${page.url}</loc>`;
+              const lastmod = page.lastmod ? `<lastmod>${page.lastmod}</lastmod>` : '';
+              const changefreq = page.changefreq ? `<changefreq>${page.changefreq}</changefreq>` : '';
+              const priority = page.priority ? `<priority>${page.priority}</priority>` : '';
               return `<url>${loc}${lastmod}${changefreq}${priority}</url>`;
             }).join('')}
           </urlset>`;
         return h.response(xml).type('text/xml');
       } else if (request.params.type === 'txt') {
-        const txt = pages.map(url => `${protocol}://${request.info.host}${url.path}`).join('\n');
+        const txt = pages.map(page => `${page.url}`).join('\n');
         return h.response(txt).type('text/plain');
       }
       // assume .json:
