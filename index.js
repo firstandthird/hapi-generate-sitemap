@@ -1,8 +1,7 @@
 const getRoutes = require('./lib/getRoutes');
 const Joi = require('joi');
 const groupBy = require('lodash.groupby');
-
-const sorter = (a, b) => a.path > b.path;
+const sortBy = require('lodash.sortby');
 
 const register = (server, pluginOptions) => {
   // const pathName = pluginOptions.endpoint || '/sitemap';
@@ -33,7 +32,7 @@ const register = (server, pluginOptions) => {
         }
         server.log(['hapi-generate-sitemap', 'requested', 'info'], logVal);
       }
-      const pages = await getRoutes(server, pluginOptions, request);
+      let pages = await getRoutes(server, pluginOptions, request);
       const additionalRoutes = typeof pluginOptions.additionalRoutes === 'function' ? await pluginOptions.additionalRoutes() : [];
       // add any additional pages:
       additionalRoutes.forEach(route => {
@@ -45,7 +44,7 @@ const register = (server, pluginOptions) => {
         }
       });
       // sort everything by path:
-      pages.sort(sorter);
+      pages = sortBy(pages, ['section', 'path']);
       const protocol = pluginOptions.forceHttps ? 'https' : request.server.info.protocol;
       if (request.params.type === 'html') {
         // if we're using a view just render and return that:;
@@ -54,8 +53,6 @@ const register = (server, pluginOptions) => {
         }
         // group the list by sections:
         const sections = groupBy(pages, (page) => page.section);
-        // sort each section:
-        Object.values(sections).forEach(section => section.sort(sorter));
         // first list all the routes that have no section:
         let html = `
           <ul>
