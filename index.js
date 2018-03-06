@@ -14,7 +14,7 @@ const register = (server, pluginOptions) => {
     dynamicRoutes: Joi.func().optional(), //  returns what routes to list for routes that use dynamic params (eg '/user/{userName}' --> ['/user/roberto', '/user/maria'])
     getRouteMetaData: Joi.func().optional(), // returns any metadata you want associated with a given route
     endpoint: Joi.string().default('/sitemap'), // name of the path where you can GET a copy of the sitemap
-    logRequest: Joi.boolean().default(false), // specify whether to log each request for the sitemap
+    logRequest: Joi.boolean().default(false) // specify whether to log each request for the sitemap
   }));
 
   if (validation.error) {
