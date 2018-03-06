@@ -703,6 +703,39 @@ tap.test('lastmod, changefreq and priority sitemap tags can be set by dynamicRou
   t.end();
 });
 
+tap.test('lastmod, changefreq and priority sitemap tags can be set by a custom function (getRouteMetaData)', async(t) => {
+  const server = await new Hapi.Server({ port: 8080 });
+  await server.register({
+    plugin,
+    options: {
+      getRouteMetaData(route) {
+        t.match(route, '/path1');
+        return {
+          lastmod: '2005-01-01',
+          changefreq: 'monthly',
+          priority: 0.8,
+        };
+      }
+    }
+  });
+  server.route({
+    method: 'get',
+    path: '/path1',
+    handler(request, h) {
+      return 'hello';
+    }
+  });
+  await server.start();
+  const response = await server.inject({
+    method: 'get',
+    url: '/sitemap.xml'
+  });
+  t.equal(response.statusCode, 200, 'returns HTTP OK');
+  t.match(response.result, `<url><loc>http://${server.info.host}:${server.info.port}/path1</loc><lastmod>2005-01-01</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>`, 'formats sitemap tags correctly');
+  await server.stop();
+  t.end();
+});
+
 tap.test('.json?meta=1 will also return metadata (section, lastmod, changefreq, priority) ', async(t) => {
   const server = await new Hapi.Server({ port: 8080 });
   await server.register(plugin, {});

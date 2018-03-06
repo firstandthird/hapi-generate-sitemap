@@ -12,8 +12,9 @@ const register = (server, pluginOptions) => {
     excludeUrls: Joi.array().default([]), // these urls are excluded from the sitemap
     additionalRoutes: Joi.func().optional(), // returns any additional routes you want listed on your sitemap
     dynamicRoutes: Joi.func().optional(), //  returns what routes to list for routes that use dynamic params (eg '/user/{userName}' --> ['/user/roberto', '/user/maria'])
+    getRouteMetaData: Joi.func().optional(), // returns any metadata you want associated with a given route
     endpoint: Joi.string().default('/sitemap'), // name of the path where you can GET a copy of the sitemap
-    logRequest: Joi.boolean().default(false) // specify whether to log each request for the sitemap
+    logRequest: Joi.boolean().default(false), // specify whether to log each request for the sitemap
   }));
 
   if (validation.error) {
@@ -45,6 +46,12 @@ const register = (server, pluginOptions) => {
       });
       // sort everything by path:
       pages = sortBy(pages, ['section', 'path']);
+      // get any additional metadata for each route:
+      if (pluginOptions.getRouteMetaData) {
+        pages.forEach(page => {
+          Object.assign(page, pluginOptions.getRouteMetaData(page.path));
+        });
+      }
       const protocol = pluginOptions.forceHttps ? 'https' : request.server.info.protocol;
       if (request.params.type === 'html') {
         // if we're using a view just render and return that:;
