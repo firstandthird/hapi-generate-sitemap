@@ -37,7 +37,7 @@ const register = (server, pluginOptions) => {
       // add any additional pages:
       additionalRoutes.forEach(route => {
         if (typeof route === 'string') {
-          pages.push({ path: route, section: 'none' });
+          pages.push({ path: route, title: route, section: 'none' });
         } else {
           // otherwise assume it is an object with a path and section heading:
           pages.push(route);
@@ -56,7 +56,7 @@ const register = (server, pluginOptions) => {
         // first list all the routes that have no section:
         let html = `
           <ul>
-            ${sections.none.map((page) => `<li><a href="${protocol}://${request.info.host}${page.path}">${protocol}://${request.info.host}${page.path}</a></li>`).join('')}
+            ${sections.none.map((page) => `<li><a href="${protocol}://${request.info.host}${page.path}">${page.title || `${protocol}://${request.info.host}${page.path}`}</a></li>`).join('')}
           </ul>`;
         Object.keys(sections).sort().forEach(sectionName => {
           if (sectionName === 'none') {
@@ -64,7 +64,7 @@ const register = (server, pluginOptions) => {
           }
           html = `${html} <h2>${sectionName}</h2><ul>`;
           sections[sectionName].forEach(page => {
-            html = `${html}<li><a href="${protocol}://${request.info.host}${page.path}">${protocol}://${request.info.host}${page.path}</a></li>`;
+            html = `${html}<li><a href="${protocol}://${request.info.host}${page.path}">${page.title || `${protocol}://${request.info.host}${page.path}`}</a></li>`;
           });
           html = `${html}</ul>`;
         });

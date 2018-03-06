@@ -18,7 +18,7 @@ tap.test('generates a sitemap', async(t) => {
     url: '/sitemap.html'
   });
   t.equal(response.statusCode, 200, 'returns HTTP OK');
-  t.notEqual(response.result.indexOf(`<a href="http://${server.info.host}:${server.info.port}/path1">http://${server.info.host}:${server.info.port}/path1</a></li>`), -1);
+  t.match(response.result, `<a href="http://${server.info.host}:${server.info.port}/path1">http://${server.info.host}:${server.info.port}/path1</a></li>`);
   await server.stop();
   t.end();
 });
@@ -736,6 +736,50 @@ tap.test('.json?meta=1 will also return metadata (section, lastmod, changefreq, 
     priority: 0.8,
     changefreq: 'monthly',
   }]);
+  await server.stop();
+  t.end();
+});
+
+tap.test('will use title as text for hyperlink (if specified)', async(t) => {
+  const server = await new Hapi.Server({ port: 8080 });
+  server.route({
+    method: 'get',
+    path: '/path1',
+    config: {
+      plugins: {
+        sitemap: {
+          title: 'A link'
+        }
+      }
+    },
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  server.route({
+    method: 'get',
+    path: '/path2',
+    config: {
+      plugins: {
+        sitemap: {
+          section: 'A',
+          title: 'A second link'
+        }
+      }
+    },
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  await server.register(plugin, {});
+  await server.start();
+  const response = await server.inject({
+    method: 'get',
+    url: '/sitemap.html'
+  });
+  t.equal(response.statusCode, 200, 'returns HTTP OK');
+  t.match(response.result, `<a href="http://${server.info.host}:${server.info.port}/path1">A link</a></li>`);
+  t.match(response.result, `<a href="http://${server.info.host}:${server.info.port}/path2">A second link</a></li>`);
   await server.stop();
   t.end();
 });
