@@ -708,8 +708,8 @@ tap.test('lastmod, changefreq and priority sitemap tags can be set by a custom f
   await server.register({
     plugin,
     options: {
-      getRouteMetaData(route) {
-        t.match(route, '/path1');
+      getRouteMetaData(page) {
+        t.match(page.path, '/path1');
         return {
           lastmod: '2005-01-01',
           priority: 0.8,
