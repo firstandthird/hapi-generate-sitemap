@@ -712,7 +712,6 @@ tap.test('lastmod, changefreq and priority sitemap tags can be set by a custom f
         t.match(route, '/path1');
         return {
           lastmod: '2005-01-01',
-          changefreq: 'monthly',
           priority: 0.8,
         };
       }
@@ -721,6 +720,13 @@ tap.test('lastmod, changefreq and priority sitemap tags can be set by a custom f
   server.route({
     method: 'get',
     path: '/path1',
+    config: {
+      plugins: {
+        sitemap: {
+          changefreq: 'monthly',
+        }
+      }
+    },
     handler(request, h) {
       return 'hello';
     }

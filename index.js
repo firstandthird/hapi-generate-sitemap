@@ -46,12 +46,6 @@ const register = (server, pluginOptions) => {
       });
       // sort everything by path:
       pages = sortBy(pages, ['section', 'path']);
-      // get any additional metadata for each route:
-      if (pluginOptions.getRouteMetaData) {
-        pages.forEach(page => {
-          Object.assign(page, pluginOptions.getRouteMetaData(page.path));
-        });
-      }
       const protocol = pluginOptions.forceHttps ? 'https' : request.server.info.protocol;
       if (request.params.type === 'html') {
         // if we're using a view just render and return that:;
