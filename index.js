@@ -47,8 +47,9 @@ const register = (server, pluginOptions) => {
         }
       });
       // sort everything by path:
-      pages = sortBy(pages, ['section', 'path']);
+      pages = sortBy(pages, 'path');
       if (request.params.type === 'html') {
+        pages = sortBy(pages, ['section', 'path']);
         // if we're using a view just render and return that:;
         if (pluginOptions.htmlView !== '') {
           return h.view(pluginOptions.htmlView, { sitemap: pages });
