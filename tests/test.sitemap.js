@@ -742,6 +742,57 @@ tap.test('lastmod, changefreq and priority sitemap tags can be set by a custom f
   t.end();
 });
 
+tap.test('if getRouteMetaData returns false then the route will not be included in the sitemap', async(t) => {
+  const server = await new Hapi.Server({ port: 8080 });
+  await server.register({
+    plugin,
+    options: {
+      getRouteMetaData(page) {
+        // /path1 will return false:
+        return page.path === '/path1' ? false : {};
+      }
+    }
+  });
+  server.route({
+    method: 'get',
+    path: '/path1',
+    config: {
+      plugins: {
+        sitemap: {
+          changefreq: 'monthly',
+        }
+      }
+    },
+    handler(request, h) {
+      return 'hello';
+    }
+  });
+  server.route({
+    method: 'get',
+    path: '/path2',
+    config: {
+      plugins: {
+        sitemap: {
+          changefreq: 'monthly',
+        }
+      }
+    },
+    handler(request, h) {
+      return 'hello';
+    }
+  });
+  await server.start();
+  const response = await server.inject({
+    method: 'get',
+    url: '/sitemap.xml'
+  });
+  t.equal(response.statusCode, 200, 'returns HTTP OK');
+  t.notMatch(response.result, '/path1', 'route not included when getRouteMetaData returns false');
+  t.match(response.result, `<url><loc>http://${server.info.host}:${server.info.port}/path2</loc><changefreq>monthly</changefreq></url>`, 'non-false values for getRouteMetaData are still included');
+  await server.stop();
+  t.end();
+});
+
 tap.test('.json?meta=1 will also return metadata (section, lastmod, changefreq, priority) ', async(t) => {
   const server = await new Hapi.Server({ port: 8080 });
   await server.register(plugin, {});
