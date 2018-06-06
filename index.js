@@ -25,6 +25,9 @@ const register = (server, pluginOptions) => {
   server.route({
     path: `${pathName}.{type}`,
     method: 'get',
+    config: {
+      auth: false
+    },
     async handler(request, h) {
       const protocol = pluginOptions.forceHttps ? 'https' : request.server.info.protocol;
       if (pluginOptions.logRequest) {
