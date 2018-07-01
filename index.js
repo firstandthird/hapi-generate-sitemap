@@ -6,6 +6,7 @@ const sortBy = require('lodash.sortby');
 const register = (server, pluginOptions) => {
   // const pathName = pluginOptions.endpoint || '/sitemap';
   const validation = Joi.validate(pluginOptions, Joi.object({
+    assignSitemap: Joi.func().optional(), // specify a unction to return the sitemap filename for each route
     htmlView: Joi.string().default(''), // specify an html template to use for rendering the sitemap, otherwise it is done programmatically
     forceHttps: Joi.boolean().default(false), // force routes to be listed as https instead of http (useful if you are behind a proxy)
     excludeTags: Joi.array().default([]), // routes marked with these tags are excluded from the sitemap
@@ -22,13 +23,19 @@ const register = (server, pluginOptions) => {
   }
   pluginOptions = validation.value;
   const pathName = validation.value.endpoint;
+  if (!pluginOptions.assignSitemap) {
+    pluginOptions.assignSitemap = (route) => {
+      route.sitemap = pluginOptions.endpoint;
+    };
+  }
   server.route({
-    path: `${pathName}.{type}`,
+    path: `${pathName}{suffix?}.{type}`,
     method: 'get',
     config: {
       auth: false
     },
     async handler(request, h) {
+      const requestedFile = request.params.suffix ? `${pathName}${request.params.suffix}` : pathName;
       const protocol = pluginOptions.forceHttps ? 'https' : request.server.info.protocol;
       if (pluginOptions.logRequest) {
         const logVal = { request: request.path, timestamp: new Date() };
@@ -49,6 +56,9 @@ const register = (server, pluginOptions) => {
           pages.push(route);
         }
       });
+      // determine which sitemap each goes to:
+      pages.forEach(pluginOptions.assignSitemap);
+      pages = pages.filter(p => p.sitemap === requestedFile);
       // sort everything by path:
       pages = sortBy(pages, 'path');
       if (request.params.type === 'html') {
