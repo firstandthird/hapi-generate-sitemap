@@ -6,7 +6,7 @@ const sortBy = require('lodash.sortby');
 const register = (server, pluginOptions) => {
   // const pathName = pluginOptions.endpoint || '/sitemap';
   const validation = Joi.validate(pluginOptions, Joi.object({
-    assignSitemap: Joi.func().optional(), // specify a unction to return the sitemap filename for each route
+    assignSitemap: Joi.func().optional(), // specify a Function to return the sitemap filename for each route
     htmlView: Joi.string().default(''), // specify an html template to use for rendering the sitemap, otherwise it is done programmatically
     forceHttps: Joi.boolean().default(false), // force routes to be listed as https instead of http (useful if you are behind a proxy)
     excludeTags: Joi.array().default([]), // routes marked with these tags are excluded from the sitemap
