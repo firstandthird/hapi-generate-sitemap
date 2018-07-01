@@ -900,7 +900,6 @@ tap.test('take in an assignSitemap method', async(t) => {
         }
       },
       dynamicRoutes: (path, request) => {
-        t.equal(request.query.limit, '1', 'passes request object to dynamicRoutes');
         const routes = {
           '/path/{param}': [
             '/path/param1',
@@ -915,7 +914,7 @@ tap.test('take in an assignSitemap method', async(t) => {
   await server.start();
   const response = await server.inject({
     method: 'get',
-    url: '/sitemap-huh.json?limit=1'
+    url: '/sitemap-huh.json'
   });
   t.equal(response.statusCode, 200, 'returns HTTP OK');
   t.deepEqual(response.result, ['/path/param1']);
