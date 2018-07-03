@@ -5,6 +5,8 @@ const html = require('./lib/html.js');
 const txt = require('./lib/txt.js');
 const xml = require('./lib/xml.js');
 
+const handlers = { html, xml, txt };
+
 const register = (server, pluginOptions) => {
   // const pathName = pluginOptions.endpoint || '/sitemap';
   const validation = Joi.validate(pluginOptions, Joi.object({
@@ -53,12 +55,8 @@ const register = (server, pluginOptions) => {
       });
       // sort everything by path:
       pages = sortBy(pages, 'path');
-      if (request.params.type === 'html') {
-        return html(pages, h, pluginOptions);
-      } else if (request.params.type === 'xml') {
-        return xml(pages, h, pluginOptions);
-      } else if (request.params.type === 'txt') {
-        return txt(pages, h, pluginOptions);
+      if (handlers[request.params.type]) {
+        return handlers[request.params.type](pages, h, pluginOptions);
       }
       // assume .json:
       if (request.query.meta) {
