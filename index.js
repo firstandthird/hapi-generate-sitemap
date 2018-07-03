@@ -1,3 +1,4 @@
+const boom = require('boom');
 const getRoutes = require('./lib/getRoutes');
 const Joi = require('joi');
 const sortBy = require('lodash.sortby');
@@ -55,6 +56,9 @@ const register = (server, pluginOptions) => {
       });
       // sort everything by path:
       pages = sortBy(pages, 'path');
+      if (request.params.type && request.params.type !== 'json' && !handlers[request.params.type]) {
+        throw boom.notFound(`No handler found for file type ${request.params.type}`);
+      }
       if (handlers[request.params.type]) {
         return handlers[request.params.type](pages, h, pluginOptions);
       }
