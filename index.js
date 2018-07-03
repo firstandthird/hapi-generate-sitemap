@@ -1,7 +1,9 @@
 const getRoutes = require('./lib/getRoutes');
 const Joi = require('joi');
-const groupBy = require('lodash.groupby');
 const sortBy = require('lodash.sortby');
+const html = require('./lib/html.js');
+const txt = require('./lib/txt.js');
+const xml = require('./lib/xml.js');
 
 const register = (server, pluginOptions) => {
   // const pathName = pluginOptions.endpoint || '/sitemap';
@@ -52,44 +54,11 @@ const register = (server, pluginOptions) => {
       // sort everything by path:
       pages = sortBy(pages, 'path');
       if (request.params.type === 'html') {
-        pages = sortBy(pages, ['section', 'path']);
-        // if we're using a view just render and return that:;
-        if (pluginOptions.htmlView !== '') {
-          return h.view(pluginOptions.htmlView, { sitemap: pages });
-        }
-        // group the list by sections:
-        const sections = groupBy(pages, (page) => page.section);
-        // first list all the routes that have no section:
-        let html = `
-          <ul>
-            ${sections.none.map((page) => `<li><a href="${page.url}">${page.title || page.url}</a></li>`).join('')}
-          </ul>`;
-        Object.keys(sections).sort().forEach(sectionName => {
-          if (sectionName === 'none') {
-            return;
-          }
-          html = `${html} <h2>${sectionName}</h2><ul>`;
-          sections[sectionName].forEach(page => {
-            html = `${html}<li><a href="${page.url}">${page.title || page.url}</a></li>`;
-          });
-          html = `${html}</ul>`;
-        });
-        return html;
+        return html(pages, h, pluginOptions);
       } else if (request.params.type === 'xml') {
-        const xml = `<?xml version="1.0" encoding="UTF-8"?>
-          <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-            ${pages.map((page) => {
-              const loc = `<loc>${page.url}</loc>`;
-              const lastmod = page.lastmod ? `<lastmod>${page.lastmod}</lastmod>` : '';
-              const changefreq = page.changefreq ? `<changefreq>${page.changefreq}</changefreq>` : '';
-              const priority = page.priority ? `<priority>${page.priority}</priority>` : '';
-              return `<url>${loc}${lastmod}${changefreq}${priority}</url>`;
-            }).join('')}
-          </urlset>`;
-        return h.response(xml).type('text/xml');
+        return xml(pages, h, pluginOptions);
       } else if (request.params.type === 'txt') {
-        const txt = pages.map(page => `${page.url}`).join('\n');
-        return h.response(txt).type('text/plain');
+        return txt(pages, h, pluginOptions);
       }
       // assume .json:
       if (request.query.meta) {
