@@ -922,3 +922,27 @@ tap.test('take in an assignSitemap method', async(t) => {
 
   t.end();
 });
+
+
+tap.test('will 404 if no handler found for the requested file type', async(t) => {
+  const server = await new Hapi.Server({ port: 8080 });
+  server.route({
+    method: 'get',
+    path: '/path1',
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  await server.register({
+    plugin,
+    options: {}
+  });
+  await server.start();
+  const response = await server.inject({
+    method: 'get',
+    url: '/sitemap.notAFileType'
+  });
+  t.equal(response.statusCode, 404, 'returns HTTP Not Found');
+  await server.stop();
+  t.end();
+});
