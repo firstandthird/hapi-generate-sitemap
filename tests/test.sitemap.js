@@ -399,11 +399,6 @@ tap.test('ignore routes by plugin config on route', async(t) => {
   });
   server.route({
     method: 'get',
-    config: {
-      plugins: {
-        sitemap: false
-      }
-    },
     path: '/redirect',
     handler(request, h) {
       return { success: true };
