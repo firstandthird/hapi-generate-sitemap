@@ -7,6 +7,11 @@ tap.test('generates a sitemap', async(t) => {
   server.route({
     method: 'get',
     path: '/path1',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
     handler(request, h) {
       return { success: true };
     }
@@ -28,6 +33,11 @@ tap.test('generates a sitemap when htmlView is set', async(t) => {
   server.route({
     method: 'get',
     path: '/path1',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
     handler(request, h) {
       return { success: true };
     }
@@ -64,6 +74,11 @@ tap.test('forceHttps labels all routes with "https://" (useful if you are behind
   server.route({
     method: 'get',
     path: '/path1',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
     handler(request, h) {
       return { success: true };
     }
@@ -90,6 +105,11 @@ tap.test('html can be divided into sections', async(t) => {
   server.route({
     method: 'get',
     path: '/path1',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
     handler(request, h) {
       return { success: true };
     }
@@ -253,6 +273,11 @@ tap.test('each section in html is sorted', async(t) => {
   server.route({
     method: 'get',
     path: '/noneB',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
     handler(request, h) {
       return { success: true };
     }
@@ -260,6 +285,11 @@ tap.test('each section in html is sorted', async(t) => {
   server.route({
     method: 'get',
     path: '/noneA',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
     handler(request, h) {
       return { success: true };
     }
@@ -286,6 +316,11 @@ tap.test('can take custom endpoint', async(t) => {
   server.route({
     method: 'get',
     path: '/path1',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
     handler(request, h) {
       return { success: true };
     }
@@ -312,6 +347,11 @@ tap.test('ignore routes by routetag', async(t) => {
   server.route({
     method: 'get',
     path: '/path1',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
     handler(request, h) {
       return { success: true };
     }
@@ -348,17 +388,17 @@ tap.test('ignore routes by plugin config on route', async(t) => {
   server.route({
     method: 'get',
     path: '/path1',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
     handler(request, h) {
       return { success: true };
     }
   });
   server.route({
     method: 'get',
-    config: {
-      plugins: {
-        sitemap: false
-      }
-    },
     path: '/redirect',
     handler(request, h) {
       return { success: true };
@@ -386,6 +426,11 @@ tap.test('ignore urls by excludeUrls', async(t) => {
   server.route({
     method: 'get',
     path: '/path1',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
     handler(request, h) {
       return { success: true };
     }
@@ -393,6 +438,11 @@ tap.test('ignore urls by excludeUrls', async(t) => {
   server.route({
     method: 'get',
     path: '/redirect',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
     handler(request, h) {
       return { success: true };
     }
@@ -419,6 +469,11 @@ tap.test('?all=1 query option will over-ride the "ignore" plugin config', async(
   server.route({
     method: 'get',
     path: '/path1',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
     handler(request, h) {
       return { success: true };
     }
@@ -426,11 +481,6 @@ tap.test('?all=1 query option will over-ride the "ignore" plugin config', async(
   server.route({
     method: 'get',
     path: '/path2',
-    config: {
-      plugins: {
-        sitemap: false
-      }
-    },
     handler(request, h) {
       return { success: true };
     }
@@ -455,6 +505,11 @@ tap.test('accepts dynamic route options', async(t) => {
   server.route({
     method: 'get',
     path: '/path/{param}',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
     handler(request, h) {
       return 'hello';
     }
@@ -463,6 +518,11 @@ tap.test('accepts dynamic route options', async(t) => {
   server.route({
     method: 'get',
     path: '/static-route',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
     handler(request, h) {
       return 'static hello';
     }
@@ -493,7 +553,6 @@ tap.test('accepts dynamic route options', async(t) => {
   t.equal(response.statusCode, 200, 'returns HTTP OK');
   t.deepEqual(response.result, ['/path/param1', '/path/param2', '/path/param3', '/static-route']);
   await server.stop();
-
   t.end();
 });
 
@@ -548,17 +607,17 @@ tap.test('accepts a function containing additional unlisted routes', async(t) =>
   server.route({
     method: 'get',
     path: '/path1',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
     handler(request, h) {
       return { success: true };
     }
   });
   server.route({
     method: 'get',
-    config: {
-      plugins: {
-        sitemap: false
-      }
-    },
     path: '/redirect',
     handler(request, h) {
       return { success: true };
@@ -588,6 +647,11 @@ tap.test('can also return txt output', async(t) => {
   server.route({
     method: 'get',
     path: '/path1',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
     handler(request, h) {
       return { success: true };
     }
@@ -613,6 +677,11 @@ tap.test('can also return xml output', async(t) => {
   server.route({
     method: 'get',
     path: '/path1',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
     handler(request, h) {
       return { success: true };
     }
@@ -687,6 +756,11 @@ tap.test('lastmod, changefreq and priority sitemap tags can be set by dynamicRou
   server.route({
     method: 'get',
     path: '/path/{param}',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
     handler(request, h) {
       return 'hello';
     }
@@ -879,6 +953,11 @@ tap.test('will 404 if no handler found for the requested file type', async(t) =>
   server.route({
     method: 'get',
     path: '/path1',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
     handler(request, h) {
       return { success: true };
     }
