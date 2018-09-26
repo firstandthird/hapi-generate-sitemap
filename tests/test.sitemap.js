@@ -948,6 +948,56 @@ tap.test('will use title as text for hyperlink (if specified)', async(t) => {
   t.end();
 });
 
+tap.test('take in an assignSitemap method', async(t) => {
+  const server = await new Hapi.Server({ port: 8080 });
+  server.route({
+    method: 'get',
+    path: '/path/{param}',
+    handler(request, h) {
+      return 'hello';
+    }
+  });
+  server.route({
+    method: 'get',
+    path: '/static-route',
+    handler(request, h) {
+      return 'static hello';
+    }
+  });
+
+  await server.register({
+    plugin,
+    options: {
+      assignSitemap: (route) => {
+        if (route.path === '/path/param1') {
+          route.sitemap = '/sitemap-huh';
+        }
+      },
+      dynamicRoutes: (path, request) => {
+        const routes = {
+          '/path/{param}': [
+            '/path/param1',
+            '/path/param2',
+            '/path/param3'
+          ]
+        };
+        return (routes[path]) ? routes[path] : [];
+      }
+    }
+  });
+  await server.start();
+  const response = await server.inject({
+    method: 'get',
+    url: '/sitemap-huh.json'
+  });
+  t.equal(response.statusCode, 200, 'returns HTTP OK');
+  t.deepEqual(response.result, ['/path/param1']);
+  await server.stop();
+
+  t.end();
+});
+
+
 tap.test('will 404 if no handler found for the requested file type', async(t) => {
   const server = await new Hapi.Server({ port: 8080 });
   server.route({
