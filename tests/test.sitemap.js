@@ -975,3 +975,136 @@ tap.test('will 404 if no handler found for the requested file type', async(t) =>
   await server.stop();
   t.end();
 });
+
+tap.test('allows you to break up sitemaps into seperate files', async (t) => {
+  const server = await new Hapi.Server({ port: 8080 });
+  server.route({
+    method: 'get',
+    path: '/home',
+    config: {
+      plugins: {
+        sitemap: {
+          file: 'places'
+        }
+      }
+    },
+    handler(request, h) {
+      return { sure: 'why not' };
+    }
+  });
+  server.route({
+    method: 'get',
+    path: '/car',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
+    handler(request, h) {
+      return { sure: 'why not' };
+    }
+  });
+  await server.register({
+    plugin,
+    options: {}
+  });
+  await server.start();
+  const response = await server.inject({
+    method: 'get',
+    url: '/sitemap.html'
+  });
+  t.equal(response.statusCode, 200, 'returns ok');
+  t.match(response.result, `<a href="http://${server.info.host}:${server.info.port}/car">`);
+  const placeResponse = await server.inject({
+    method: 'get',
+    url: '/sitemap-places.html'
+  });
+  t.equal(placeResponse.statusCode, 200, 'returns HTTP Not Found');
+  t.match(placeResponse.result, `<a href="http://${server.info.host}:${server.info.port}/home">`);
+  await server.stop();
+  t.end();
+});
+
+tap.test('allows you to set a max length for sitemaps', async (t) => {
+  const server = await new Hapi.Server({ port: 8080 });
+  server.route({
+    method: 'get',
+    path: '/home',
+    config: {
+      plugins: {
+        sitemap: {
+          file: 'places'
+        }
+      }
+    },
+    handler(request, h) {
+      return { sure: 'why not' };
+    }
+  });
+  server.route({
+    method: 'get',
+    path: '/slug-{number}',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
+    handler(request, h) {
+      return { sure: 'why not' };
+    }
+  });
+  await server.register({
+    plugin,
+    options: {
+      maxPerPage: 8,
+      dynamicRoutes(slug) {
+        return [
+          '/path-one',
+          '/slug-one',
+          '/slug-two',
+          '/slug-three',
+          '/slug-four',
+          '/slug-five',
+          '/slug-six',
+          '/slug-seven',
+          '/slug-eight',
+          '/slug-nine',
+          '/slug-ten',
+          '/slug-eleven',
+          '/slug-twelve',
+          '/path-two',
+          '/slug-thirteen',
+          '/slug-fourteen',
+          '/slug-fifteen',
+          '/slug-sixteen',
+          '/slug-seventeen',
+          '/slug-eighteen',
+          '/slug-nineteen',
+          '/slug-twenty',
+          '/slug-tentyone',
+          '/slug-twentytwo',
+          '/slug-twentythree',
+          '/slug-twentyfour'
+        ];
+      }
+    }
+  });
+  await server.start();
+  const response = await server.inject({
+    method: 'get',
+    url: '/sitemap.xml'
+  });
+  t.equal(response.statusCode, 200, 'returns ok');
+  t.match(response.result, `<sitemap><loc>http://${server.info.host}:${server.info.port}/sitemap-main-1.xml</loc></sitemap>`);
+  t.match(response.result, `<sitemap><loc>http://${server.info.host}:${server.info.port}/sitemap-main-2.xml</loc></sitemap>`);
+  t.match(response.result, `<sitemap><loc>http://${server.info.host}:${server.info.port}/sitemap-main-3.xml</loc></sitemap>`);
+
+  const placeResponse = await server.inject({
+    method: 'get',
+    url: '/sitemap-places.xml'
+  });
+  t.equal(placeResponse.statusCode, 200, 'returns HTTP Not Found');
+  t.match(placeResponse.result, `<url><loc>http://${server.info.host}:${server.info.port}/home</loc></url>`);
+  await server.stop();
+  t.end();
+});

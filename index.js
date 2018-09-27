@@ -1,10 +1,12 @@
-const boom = require('boom');
+const Boom = require('boom');
 const getRoutes = require('./lib/getRoutes');
 const Joi = require('joi');
 const sortBy = require('lodash.sortby');
 const html = require('./lib/html.js');
 const txt = require('./lib/txt.js');
 const xml = require('./lib/xml.js');
+
+const generateIndex = require('./lib/generateIndex.js');
 
 const handlers = { html, xml, txt };
 
@@ -19,7 +21,8 @@ const register = (server, pluginOptions) => {
     dynamicRoutes: Joi.func().optional(), //  returns what routes to list for routes that use dynamic params (eg '/user/{userName}' --> ['/user/roberto', '/user/maria'])
     getRouteMetaData: Joi.func().optional(), // returns any metadata you want associated with a given route
     endpoint: Joi.string().default('/sitemap'), // name of the path where you can GET a copy of the sitemap
-    logRequest: Joi.boolean().default(false) // specify whether to log each request for the sitemap
+    logRequest: Joi.boolean().default(false), // specify whether to log each request for the sitemap
+    maxPerPage: Joi.number().optional().default(1000)
   }));
 
   if (validation.error) {
@@ -28,7 +31,7 @@ const register = (server, pluginOptions) => {
   pluginOptions = validation.value;
   const pathName = validation.value.endpoint;
   server.route({
-    path: `${pathName}.{type}`,
+    path: `${pathName}{suffix?}.{type}`,
     method: 'get',
     config: {
       auth: false
@@ -42,22 +45,59 @@ const register = (server, pluginOptions) => {
         }
         server.log(['hapi-generate-sitemap', 'requested', 'info'], logVal);
       }
+      let file;
+      let page;
+      if (request.params.suffix[0] === '-') {
+        request.params.suffix = request.params.suffix.slice(1);
+      }
+      if (request.params.suffix) {
+        [file, page] = request.params.suffix.split('-');
+      }
+      if (!file) {
+        file = 'main';
+      }
       let pages = await getRoutes(server, pluginOptions, request);
+
       const additionalRoutes = typeof pluginOptions.additionalRoutes === 'function' ? await pluginOptions.additionalRoutes() : [];
       // add any additional pages:
       additionalRoutes.forEach(route => {
         if (typeof route === 'string') {
-          pages.push({ path: route, title: route, section: 'none', url: `${protocol}://${request.info.host}${route}` });
+          pages.main.push({ path: route, title: route, section: 'none', url: `${protocol}://${request.info.host}${route}` });
         } else {
           // otherwise assume it is an object with a path and section heading:
           route.url = `${protocol}://${request.info.host}${route}`;
-          pages.push(route);
+          pages.main.push(route);
         }
       });
+
+      // Get the array for the requested page.
+      if (!pages[file]) {
+        throw Boom.notFound();
+      }
+      pages = pages[file];
+      // Are we trying to use a page with non xml type
+      if (request.params.type !== 'xml' && page) {
+        throw Boom.notFound();
+      }
+      // Are we over the max?
+      if (pages.length > pluginOptions.maxPerPage && request.params.type === 'xml') {
+        // if no page - return sitemap index file
+        if (!page) {
+          // How many files are there?
+          const pgCount = Math.ceil(pages.length / pluginOptions.maxPerPage);
+          return generateIndex(pgCount, file, protocol, pluginOptions, request, h);
+        }
+        const start = (page - 1) * pluginOptions.maxPerPage;
+        const end = page * pluginOptions.maxPerPage;
+        pages = pages.slice(start, end);
+        if (pages.length === 0) {
+          throw Boom.notFound();
+        }
+      }
       // sort everything by path:
       pages = sortBy(pages, 'path');
       if (request.params.type && request.params.type !== 'json' && !handlers[request.params.type]) {
-        throw boom.notFound(`No handler found for file type ${request.params.type}`);
+        throw Boom.notFound(`No handler found for file type ${request.params.type}`);
       }
       if (handlers[request.params.type]) {
         return handlers[request.params.type](pages, h, pluginOptions);
@@ -66,7 +106,7 @@ const register = (server, pluginOptions) => {
       if (request.query.meta) {
         return pages;
       }
-      return pages.map(page => page.path);
+      return pages.map(pg => pg.path);
     }
   });
 };
