@@ -1,6 +1,6 @@
 {
   "name": "hapi-generate-sitemap",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Hapi plugin for generating a sitemap",
   "main": "index.js",
   "scripts": {
