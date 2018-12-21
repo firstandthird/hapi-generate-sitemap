@@ -65,7 +65,7 @@ const register = (server, pluginOptions) => {
           pages.main.push({ path: route, title: route, section: 'none', url: `${protocol}://${request.info.host}${route}` });
         } else {
           // otherwise assume it is an object with a path and section heading:
-          route.url = `${protocol}://${request.info.host}${route}`;
+          route.url = `${protocol}://${request.info.host}${route.path}`;
           pages.main.push(route);
         }
       });

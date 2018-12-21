@@ -642,6 +642,45 @@ tap.test('accepts a function containing additional unlisted routes', async(t) =>
   t.end();
 });
 
+tap.test('accepts a function containing additional unlisted routes in object form', async(t) => {
+  const server = await new Hapi.Server({ port: 8080 });
+  server.route({
+    method: 'get',
+    path: '/path1',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  server.route({
+    method: 'get',
+    path: '/redirect',
+    handler(request, h) {
+      return { success: true };
+    }
+  });
+  await server.register({
+    plugin,
+    options: {
+      additionalRoutes: () => new Promise((resolve, reject) => resolve([{ title: 'link1', path: '/add1' }, { title: 'link2', path: '/add2' }]))
+    }
+  });
+  await server.start();
+  const response = await server.inject({
+    method: 'get',
+    url: '/sitemap.html'
+  });
+  t.equal(response.statusCode, 200, 'returns HTTP OK');
+  t.notEqual(response.result.indexOf('link1'), -1);
+  t.notEqual(response.result.indexOf('link2'), -1);
+  await server.stop();
+  t.end();
+});
+
 tap.test('can also return txt output', async(t) => {
   const server = await new Hapi.Server({ port: 8080 });
   server.route({
