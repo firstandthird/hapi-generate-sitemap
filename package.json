@@ -19,17 +19,17 @@
   "license": "MIT",
   "dependencies": {
     "boom": "^7.2.0",
-    "joi": "^13.1.0",
+    "joi": "^14.3.1",
     "lodash.groupby": "^4.6.0",
     "lodash.sortby": "^4.7.0"
   },
   "devDependencies": {
-    "eslint": "^4.15.0",
+    "eslint": "^5.16.0",
     "eslint-config-firstandthird": "^4.3.0",
     "eslint-plugin-import": "^2.8.0",
     "handlebars": "^4.0.11",
-    "hapi": "^17.2.0",
-    "tap": "^12.0.1",
+    "hapi": "^18.1.0",
+    "tap": "^13.1.2",
     "vision": "^5.3.1"
   }
 }
