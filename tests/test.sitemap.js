@@ -1147,3 +1147,43 @@ tap.test('allows you to set a max length for sitemaps', async (t) => {
   await server.stop();
   t.end();
 });
+
+tap.test('supports video sitemap as well', async (t) => {
+  const server = await new Hapi.Server({ port: 8080 });
+  server.route({
+    method: 'get',
+    path: '/car',
+    config: {
+      plugins: {
+        sitemap: true
+      }
+    },
+    handler(request, h) {
+      return { sure: 'why not' };
+    }
+  });
+  await server.register({
+    plugin,
+    options: {
+      videoPages() {
+        return {
+          '/car': {
+            title: 'a car video',
+            thumbnail_loc: 'car.png',
+            description: 'description of a car video',
+            content_loc: 'http://youtube.com/1234'
+          }
+        };
+      }
+    }
+  });
+  await server.start();
+  const response = await server.inject({
+    method: 'get',
+    url: '/sitemap.xml'
+  });
+  t.equal(response.statusCode, 200, 'returns ok');
+  t.match(response.result, '<video:video><video:title>a car video</video:title><video:description>description of a car video</video:description><video:thumbnail_loc>car.png</video:thumbnail_loc><video:content_loc>http://youtube.com/1234</video:content_loc></video:video></url>');
+  await server.stop();
+  t.end();
+});

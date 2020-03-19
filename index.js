@@ -13,6 +13,7 @@ const handlers = { html, xml, txt };
 const register = (server, pluginOptions) => {
   // const pathName = pluginOptions.endpoint || '/sitemap';
   const validation = Joi.validate(pluginOptions, Joi.object({
+    videoPages: Joi.func().optional(),
     htmlView: Joi.string().default(''), // specify an html template to use for rendering the sitemap, otherwise it is done programmatically
     forceHttps: Joi.boolean().default(false), // force routes to be listed as https instead of http (useful if you are behind a proxy)
     excludeTags: Joi.array().default([]), // routes marked with these tags are excluded from the sitemap
@@ -56,7 +57,9 @@ const register = (server, pluginOptions) => {
       if (!file) {
         file = 'main';
       }
-      let pages = await getRoutes(server, pluginOptions, request);
+      const videos = typeof pluginOptions.videoPages === 'function' ? await pluginOptions.videoPages() : [];
+
+      let pages = await getRoutes(server, pluginOptions, request, videos);
 
       const additionalRoutes = typeof pluginOptions.additionalRoutes === 'function' ? await pluginOptions.additionalRoutes() : [];
       // add any additional pages:
