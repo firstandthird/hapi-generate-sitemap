@@ -59,8 +59,8 @@ const register = (server, pluginOptions) => {
       }
       const videos = typeof pluginOptions.videoPages === 'function' ? await pluginOptions.videoPages() : [];
 
-      let pages = await getRoutes(server, pluginOptions, request, videos);
-
+      let pages = await getRoutes(server, pluginOptions, request);
+      pages.main = pages.main.concat(videos);
       const additionalRoutes = typeof pluginOptions.additionalRoutes === 'function' ? await pluginOptions.additionalRoutes() : [];
       // add any additional pages:
       additionalRoutes.forEach(route => {
