@@ -1167,7 +1167,8 @@ tap.test('supports video sitemap as well', async (t) => {
     options: {
       videoPages() {
         return {
-          '/car': {
+          url: '/video-page',
+          video: {
             title: 'a car video',
             thumbnail_loc: 'car.png',
             description: 'description of a car video',
