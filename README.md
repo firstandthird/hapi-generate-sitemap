@@ -68,7 +68,7 @@ a {
 }
 </style>
 
-My Site Looks Like:
+<h1>My Site Looks Like:</h1>
 {{#each sitemap}}
     <a href="{{url}}">{{url}}</a>
 {{/each}}
@@ -103,7 +103,6 @@ Now when you GET _/sitemap.html_ the server will pass the  context to _sitemap_t
 {
   sitemap: [
    {
-     path: '/foopath',
      url: 'http://localhost:8080/foopath',
      section: 'none',
      lastmod: '2005-01-01',
@@ -114,7 +113,7 @@ Now when you GET _/sitemap.html_ the server will pass the  context to _sitemap_t
 }
 ```
 
-And you will get something like:
+And you will get back something like:
 
 ```html
 <style>
@@ -123,7 +122,7 @@ a {
 }
 </style>
 
-My Site Looks Like:
+<h1>My Site Looks Like:</h1>
 <a href="http://localhost:8080/foopath">
   http://localhost:8080/foopath
 </a>
